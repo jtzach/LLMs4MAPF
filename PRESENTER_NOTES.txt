@@ -1,0 +1,146 @@
+CAN LARGE LANGUAGE MODELS HELP SOLVE MULTI-AGENT PATH FINDING?
+Ten-minute presentation | Automatic or Manual mode
+Authors: Ioannis Tzachristas, Siyuan Xiao, Daniel Jess, Firas Zoghlami, Constantinos Antoniou
+
+In Manual mode, Next/Previous advances talking points; Pause freezes the current visual.
+
+1. One shared floor (0:00-0:30)
+  - Each robot has its own start and destination.
+  - All robots share the same limited space.
+  - The question is how to coordinate their movements.
+
+  0:00  Imagine delivery carts in a warehouse, all trying to reach different places.
+  0:12  A route that is good for one robot can get in the way of another.
+  0:22  Multi-Agent Path Finding means choosing routes that work together.
+
+2. What makes a valid route? (0:30-0:55)
+  - Move one square up, down, left or right — or wait.
+  - Walls block movement; matching rings mark destinations.
+  - Every robot must arrive without colliding.
+
+  0:30  Each color belongs to one robot and its destination.
+  0:40  Watch one robot wait while the other passes through the crossing.
+  0:48  Arriving does not remove a robot: it still occupies its destination.
+
+3. Two kinds of collision (0:55-1:25)
+  - Two robots cannot occupy the same square at the same time.
+  - They cannot swap positions through each other.
+  - Individual shortest routes can still create an invalid team plan.
+
+  0:55  These shortest routes put both robots in the same square together.
+  1:06  A head-on swap is also forbidden.
+  1:16  A planned wait avoids the crossing collision.
+
+4. Three searches in a warehouse (1:25-2:10)
+  - BFS explores in order of the number of moves.
+  - Dijkstra explores in order of cost so far.
+  - A* adds an estimate of the remaining distance.
+
+  1:25  The colored cells show where each algorithm looks for a route.
+  1:41  Every move costs one here, so BFS and Dijkstra explore the same cells. The next example changes the costs.
+  1:56  Here, A* explores 31 cells rather than 275. All three find a 26-step route.
+
+5. BFS counts moves; Dijkstra counts cost (2:10-2:45)
+  - BFS chooses the route with the fewest moves.
+  - Dijkstra chooses the route with the lowest total cost.
+  - When every move costs one, both choose a shortest route.
+
+  2:10  Follow each chosen route. The number on a square is the cost of entering it.
+  2:23  BFS takes four moves costing 16. Dijkstra takes eight moves costing 8: twice as many moves, half the cost.
+  2:35  Now every square costs one. Both algorithms choose the short route: four moves, cost four.
+
+6. Why planning order matters (2:45-3:20)
+  - Plan one robot, then reserve its squares and times.
+  - Later robots must fit around those reservations.
+  - Changing the order can change whether a plan is found.
+
+  2:45  Mint is planned first. Its reserved route leaves no way through for Amber.
+  2:57  Reverse the order: Amber is planned first, and Mint can use the side pocket.
+  3:10  Failure under one fixed order does not prove that the puzzle is impossible.
+
+7. A twelve-robot rush hour (3:20-4:05)
+  - Six pairs travel in opposite directions through shared aisles.
+  - Independent routes produce six conflicts in this example.
+  - Prioritized planning finds valid routes for all twelve robots.
+
+  3:20  On the left, each robot plans alone. On the right, later plans avoid earlier reservations.
+  3:36  Waiting and detours make the right-hand plan longer, but collision-free.
+  3:51  A low route cost is useful only when the combined plan is valid.
+
+8. How CBS resolves conflicts (4:05-5:00)
+  - CBS detects a collision in a candidate plan.
+  - It branches into alternatives that constrain different robots.
+  - It searches the alternatives by total route cost.
+
+  4:05  Independent routes collide; the fixed priority order and CBS both find valid plans.
+  4:21  Here, fixed priority costs 54 total steps and CBS costs 53. This is a result for this scene.
+  4:34  A real CBS decision: two robots want the same place or crossing.
+  4:44  Each branch restricts one robot and searches for a replacement route.
+  4:53  CBS can reconsider earlier choices. Another priority order can also reach cost 53 here.
+
+9. The paper: five LLM strategies (5:00-6:35)
+  - An LLM can propose complete timed routes or only a planning order.
+  - For ordering, the same classical planner builds the routes.
+  - An independent checker assesses the resulting routes.
+
+  5:00  Direct routes: the LLM writes every robot’s timed route.
+  5:12  Feedback repair: the checker reports a problem; the LLM tries to fix the routes.
+  5:25  Fresh retry: ask again from the original task, without the error report.
+  5:37  Map ordering: the LLM sees the map and chooses which robot is planned first.
+  5:50  Conflict ordering: the LLM chooses an order from summaries of likely conflicts.
+  6:05  This is an actual saved DeepSeek response: an agent order, not a set of routes.
+  6:20  The classical decoder produced the routes being replayed. The full grid was not in this LLM request.
+
+10. The benchmark experiment (6:35-7:10)
+  - Five models: Luna, Gemini, DeepSeek, Qwen and Mistral.
+  - POGEMA Puzzles: 432 scheduled cases; MovingAI: 150 small and 440 larger.
+  - All five strategies on small cases; ordering only on larger cases.
+
+  6:35  The paper uses two external benchmark sources, separate from these teaching maps.
+  6:47  We check final moves, destinations and collisions, then measure success and route cost.
+  6:59  All scheduled cases count, including 15 proved-unsolvable Puzzles cases.
+
+11. Routes, feedback and retries (7:10-7:45)
+  - Direct routes sometimes succeed on small tasks.
+  - Feedback repair is not consistently better than a fresh retry.
+  - The observed effects depend on the model and benchmark.
+
+  7:10  On Puzzles, Luna solves 238 directly, 263 with repair and 275 with a fresh retry.
+  7:22  Gemini shows the opposite repair-versus-retry pattern: 55 with repair and 40 with a fresh retry.
+  7:33  The smaller MovingAI cases also show why we need the fresh-retry control.
+
+12. Who solves more large cases? (7:45-8:25)
+  - Longest-first uses no LLM: plan longer individual routes first.
+  - Compare ordering methods using the same classical route planner.
+  - Luna solves 374 or 375 large cases; Longest-first solves 399.
+
+  7:45  Changing the planning order can help or hurt the final routes.
+  7:58  For Luna, Map ordering solves 374 and Conflict ordering 375 of the 440 larger cases.
+  8:11  The simple Longest-first rule solves more. Stronger classical references are shown with their own settings.
+
+13. Where the LLM helps (8:25-9:05)
+  - Compare route costs only where both methods return valid plans.
+  - Luna Conflict ordering and Longest-first share 359 successes.
+  - Luna saves 8.25 travel and waiting steps on average in that subset.
+
+  8:25  Success rate and route cost answer different questions.
+  8:39  The saving is 8.25 steps on average, with a 95% interval from 4.20 to 12.15.
+  8:52  Longest-first alone solves 40 cases; Luna alone solves 16. The cost benefit is not overall superiority.
+
+14. What could language add? (9:05-9:30)
+  - Translate an operator’s instruction into explicit planning constraints.
+  - Use classical planning to construct routes.
+  - Check the interpretation and routes; these proposed benefits need testing.
+
+  9:05  A possible application: “Give the medicine cart priority.”
+  9:18  Another: “The upper aisle is closed.” Language could help express the constraint.
+
+15. BMW: a rule-constrained application (9:30-10:00)
+  - Routes must respect permitted zones and crossing priorities.
+  - The linked BMW project illustrates a synthetic operational rulebook.
+  - Next question: can LLMs translate these rules into correct constraints?
+
+  9:30  This BMW project adds operational restrictions to shared-space routing.
+  9:41  Robots must respect zones, yield to forklifts and follow handover rules.
+  9:51  Scan the QR to explore. This demonstrator is separate from the paper’s benchmark experiments.
+

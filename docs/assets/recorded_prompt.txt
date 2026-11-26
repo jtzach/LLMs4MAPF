@@ -1,0 +1,21 @@
+ACTUAL SAVED STUDY REQUEST
+DeepSeek V4 Flash | Conflict ordering
+movingai-maze-32-32-2-random-13-k4
+Coordinates: row, column
+
+SYSTEM
+You solve discrete Multi-Agent Path Finding (MAPF) tasks.
+The map is a four-neighbor grid. At each time step an agent may move UP, DOWN,
+LEFT, RIGHT, or WAIT by repeating its current coordinate. A valid joint plan must:
+(1) remain on free cells, (2) use only adjacent moves or WAIT, (3) avoid two
+agents occupying the same cell at the same time, and (4) avoid two agents
+swapping cells in one time step. Follow the requested JSON schema exactly.
+Do not invent agents, cells, or graph vertices.
+
+USER
+{"agent_ids": ["a0", "a1", "a2", "a3"], "instance": {"agents": [{"goal": [5, 26], "id": "a0", "individual_shortest_path_length": 114, "start": [2, 9]}, {"goal": [6, 23], "id": "a1", "individual_shortest_path_length": 10, "start": [1, 28]}, {"goal": [1, 31], "id": "a2", "individual_shortest_path_length": 101, "start": [17, 26]}, {"goal": [22, 2], "id": "a3", "individual_shortest_path_length": 85, "start": [7, 2]}], "instruction": "Choose a total priority order. Earlier agents are planned first and reserve their paths. A useful order gives precedence to agents whose early movement clears shared bottlenecks, while avoiding starvation of agents with long constrained routes.", "interaction_edges": [{"agents": ["a2", "a3"], "conflict_count": 1, "earliest_conflict_time": 60}], "map_summary": {"articulation_points": 44, "bottleneck_load": 0.75, "family": "external_maze", "height": 32, "width": 32}}, "instance_id": "movingai-maze-32-32-2-random-13-k4", "representation": "conflict_graph", "requirements": ["Return each agent exactly once.", "Use only the listed agent IDs.", "Prefer an order likely to admit a collision-free completion with low total cost."], "task": "Return a total priority order for deterministic prioritized MAPF planning. The first agent is planned first and reserves its space-time path."}
+
+COMPLETE RECORDED RESPONSE
+{
+  "order": ["a0", "a2", "a3", "a1"]
+}
